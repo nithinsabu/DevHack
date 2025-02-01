@@ -4,7 +4,7 @@ import "../css/home.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-export default function Home() {
+export default function Entrance() {
   const navigate = useNavigate();
 
 const [entranceCode, setEntranceCode] = useState('')
@@ -16,7 +16,7 @@ await axios.post(`${process.env.REACT_APP_API_URL}/createentrance`)
     <div>
       <h1>Welcome to Home Page 🏠</h1>
       <button onClick={() => navigate("/about")}>Create Entrance</button>
-      <input type="text" value={entranceCode} onChange={(e) => setInputValue(e.target.value)}/> <button onClick={() => entrance()}>Submit</button>
+      <input type="text" value={entranceCode} onChange={(e) => setInputValue(e.target.value)}/> <button onClick={() => fx()}>Submit</button>
 
 
     </div>
