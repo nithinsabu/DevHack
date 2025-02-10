@@ -1,26 +1,23 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
     "dev": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
-  "keywords": [],
-  "description": "",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.6"
-=======
   "dependencies": {
     "backend": "file:",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mongoose": "^8.9.5",
+    "mongoose": "^8.9.6"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.9"
->>>>>>> e7db3daf000125032375dd6316bc58f91b78fe6e
   }
 }
