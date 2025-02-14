@@ -74,19 +74,23 @@ app.get("/api/getentrance", async (req, res) => {
         }
         const entrance = await Entrance.findOne({ entranceCode: entranceCode }).lean();
         const dailyEntryIds = entrance.dailyEntries.slice(Math.max(0, entrance.dailyEntries.length - begin));
-        console.log(dailyEntryIds)
-        const entries = await Entries.find({ _id: { $in: dailyEntryIds } });
+        // console.log(dailyEntryIds)
+        const entryIds = [];
+        for (const e of dailyEntryIds) {
+            entryIds.push(e.entry);
+        }
+        const entries = await Entries.find({ _id: { $in: entryIds } });
         // entrance.entries = [];
         // for (let i of entries) {
         //     entrance.entries = [...entrance.entries, ...(i.entries)];
         // }
-        
+
         // delete entrance.dailyEntries;
-        const perDayEntries = {}
-        for (let i of entries){
-            const date = i.date
-            date.setHours(0, 0, 0, 0)
-            perDayEntries[date] = i.entries
+        const perDayEntries = {};
+        for (let i of entries) {
+            const date = i.date;
+            date.setHours(0, 0, 0, 0);
+            perDayEntries[date] = i.entries;
         }
         if (entrance) {
             // console.log(entrance)
@@ -114,14 +118,16 @@ app.post("/api/scan", async (req, res) => {
         let createNew = false;
         if (entrance.dailyEntries.length === 0) createNew = true;
         else {
-            lastEntry = await Entries.findById(entrance.dailyEntries[entrance.dailyEntries.length - 1]);
+            lastEntry = await Entries.findById(entrance.dailyEntries[entrance.dailyEntries.length - 1].entry);
             if (dateDiff(new Date(), lastEntry.date) >= 1) {
                 createNew = true;
             }
         }
         if (createNew) {
-            lastEntry = await Entries.create({ date: Date.now(), entries: [] });
-            entrance.dailyEntries.push(lastEntry._id);
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+            lastEntry = await Entries.create({ date, entries: [] });
+            entrance.dailyEntries.push({ date, entry: lastEntry._id });
             await entrance.save();
         }
         if (mode === "OUT") {
@@ -143,6 +149,28 @@ app.post("/api/scan", async (req, res) => {
     } catch (e) {
         console.log(e);
         return res.status(500).send("ERROR");
+    }
+});
+
+app.delete("/api/deleteEntry", async (req, res) => {
+    try {
+        const date = new Date(req.query.date);
+        date.setHours(0, 0, 0, 0);
+        console.log(req.query)
+        const entrance = await Entrance.findOne({ entranceCode: req.query.eid });
+        const entryId = entrance.dailyEntries.find(e => e.date.getTime() === date.getTime()).entry;
+        const entry = await Entries.findById(entryId);
+        entry.entries = entry.entries.filter(e => !(e.student === req.query.entry.student && new Date(e.checkOutTime).getTime() === new Date(req.query.entry.checkOutTime).getTime()));
+        if (entry.entries.length===0){
+            entrance.dailyEntries = entrance.dailyEntries.filter((e) => !(e.entry.toString()===entry._id.toString()))
+            await entry.deleteOne()
+            await entrance.save()
+        }else{
+            await entry.save();
+        }
+        return res.status(204).send();
+    } catch (e) {
+        console.log(e);
     }
 });
 
